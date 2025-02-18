@@ -1,0 +1,6 @@
+beautifulsoup4==4.12.2
+requests==2.31.0
+pandas==2.1.0  
+streamlit==1.25.0  
+time==4.12 
+plotly==5.16.1  
