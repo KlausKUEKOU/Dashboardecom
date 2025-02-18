@@ -1,0 +1,94 @@
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+
+# Fonction pour scraper Amazon
+def scrape_amazon(product_name):
+    url = f"https://www.amazon.fr/s?k={product_name.replace(' ', '+')}"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    }
+    response = requests.get(url, headers=headers)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    
+    items = []
+    for item in soup.select('.s-result-item'):
+        title = item.select_one('h2 a span')
+        price = item.select_one('.a-price-whole')
+        rating = item.select_one('span.a-icon-alt')
+        reviews = item.select_one('span.a-size-base.s-underline-text')
+        
+        if title and price:
+            items.append({
+                'title': title.text.strip(),
+                'price': float(price.text.replace(',', '.').replace('€', '').strip()),
+                'rating': float(rating.text.split()[0]) if rating else None,
+                'reviews': int(reviews.text.replace('(', '').replace(')', '').replace('évaluations', '').strip()) if reviews else 0,
+                'site': 'Amazon'
+            })
+    return items
+
+# Fonction pour scraper Cdiscount
+def scrape_cdiscount(product_name):
+    url = f"https://www.cdiscount.com/recherche/{product_name.replace(' ', '-')}.html"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    }
+    response = requests.get(url, headers=headers)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    
+    items = []
+    for item in soup.select('.prdtBloc'):
+        title = item.select_one('.prdtTitle')
+        price = item.select_one('.price')
+        rating = item.select_one('.cpro-rating .stareval-notetop')
+        reviews = item.select_one('.cpro-review')
+        
+        if title and price:
+            items.append({
+                'title': title.text.strip(),
+                'price': float(price.text.replace('€', '').replace(',', '.').strip()),
+                'rating': float(rating.text.strip()) if rating else None,
+                'reviews': int(reviews.text.split()[0].replace('(', '').replace(')', '')) if reviews else 0,
+                'site': 'Cdiscount'
+            })
+    return items
+
+# Fonction pour scraper Fnac
+def scrape_fnac(product_name):
+    url = f"https://www.fnac.com/SearchResult/ResultList.aspx?SCat=0&Search={product_name.replace(' ', '+')}&srt=0&sa=0"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    }
+    response = requests.get(url, headers=headers)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    
+    items = []
+    for item in soup.select('.clearfix article'):
+        title = item.select_one('.prd-name')
+        price = item.select_one('.price')
+        rating = item.select_one('.rate-it-value')
+        reviews = item.select_one('.nb-opinion')
+        
+        if title and price:
+            items.append({
+                'title': title.text.strip(),
+                'price': float(price.text.replace('€', '').replace(',', '.').strip()),
+                'rating': float(rating.text.strip()) if rating else None,
+                'reviews': int(reviews.text.split()[0].replace('(', '').replace(')', '')) if reviews else 0,
+                'site': 'Fnac'
+            })
+    return items
+
+# Collecte des données pour 3 produits
+products = ["smartphone", "Smartwatch", "ecouteurs"]
+all_data = []
+
+for product in products:
+    all_data.extend(scrape_amazon(product))
+    all_data.extend(scrape_cdiscount(product))
+    all_data.extend(scrape_fnac(product))
+
+# Conversion en DataFrame
+df = pd.DataFrame(all_data)
+
