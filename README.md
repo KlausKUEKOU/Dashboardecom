@@ -86,7 +86,10 @@ Dans un marché e-commerce en constante évolution, il est essentiel de comprend
 
 ### Prérequis
 - Python 3.8 ou supérieur
-- Bibliothèques Python : voir `Requirements.txt`
+- Bibliothèques Python : voir `requirements.txt`
+     - **`requests`** : Pour effectuer des requêtes HTTP et récupérer le contenu des pages web.
+     - **`BeautifulSoup`** : Pour analyser et parser le contenu HTML des pages.
+     - **`pandas`** : Pour organiser les données collectées dans un DataFrame.
   
 ### Étapes d'Installation
 - cd chemin/vers/projet-ecommerce
